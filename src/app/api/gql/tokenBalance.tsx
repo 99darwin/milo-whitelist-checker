@@ -49,18 +49,3 @@ export const getDiviBalance = (address: string) => `
           }
     }
 `
-
-export const TestComponent = (address: string) => {
-    // get token balances
-    const diviBalance = getDiviBalance(address);
-    const { data: diviData, loading: diviLoading, error: diviError } = useQuery(diviBalance);
-    console.log(diviError ? `diviError:  ${diviError}` : `diviData: , ${JSON.stringify(diviData)}`);
-    const diviDogeBalance = getDiviDogeBalance(address);
-    const { data: diviDogeData, loading: diviDogeLoading, error: diviDogeError } = useQuery(diviDogeBalance);
-    console.log(diviDogeError ? `diviDogeError:  ${diviDogeError}` : `diviDogeData: , ${JSON.stringify(diviDogeData)}`);
-  
-    return {
-        diviData,
-        diviDogeData
-    }
-};
