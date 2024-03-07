@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { NeynarAPIClient, FeedType, FilterType } from "@neynar/nodejs-sdk"; 
-import { getDiviBalance, getDiviDogeBalance } from "../gql/tokenBalance";
+import { getDiviBalance, getDiviDogeBalance, getOutcastsBalance } from "../gql/tokenBalance";
 import whitelistedAddresses from '../../whitelist.json';
 
 const client = new NeynarAPIClient(process.env.NEYNAR_API_KEY as string);
@@ -30,13 +30,17 @@ async function getResponse(req: NextRequest): Promise<NextResponse> {
     // get token balances
     const getDiviDogeBalanceQuery = getDiviDogeBalance(result.action?.interactor.verifications[0] ?? "");
     const getDiviBalanceQuery = getDiviBalance(result.action?.interactor.verifications[0] ?? "");
+    const getOutcastsBalanceQuery = getOutcastsBalance(result.action?.interactor.verifications[0] ?? "");
     const diviData = await fetchGraphQLData(getDiviBalanceQuery);
-    const diviBalance = await diviData.data.TokenBalances?.TokenBalance ? diviData.data.TokenBalances?.TokenBalance[0].amount : 0;
+    const outcastsData = await fetchGraphQLData(getOutcastsBalanceQuery);
     const diviDogeData = await fetchGraphQLData(getDiviDogeBalanceQuery);
-    const diviDogeBalance = await diviDogeData.data.TokenBalances?.TokenBalance[0] ? diviDogeData.data.TokenBalances?.TokenBalance[0].amount : 0;
+    const diviBalance = await diviData.data.TokenBalances?.TokenBalance ? diviData.data.TokenBalances?.TokenBalance[0].amount : 0;
+    const diviDogeBalance = await diviDogeData.data.TokenBalances?.TokenBalance ? diviDogeData.data.TokenBalances?.TokenBalance[0].amount : 0;
+    const outcastsBalance = await outcastsData.data.TokenBalances?.TokenBalance ? outcastsData.data.TokenBalances?.TokenBalance[0].amount : 0;
     // use payload to verify if user is on whitelist
-    const isWhitelisted = whitelistedAddresses.includes(result.action?.interactor.verifications[0] ?? "");    
-    if (isWhitelisted || diviBalance > 0 || diviDogeBalance > 0 || fid <= 30000) {
+    const isWhitelisted = whitelistedAddresses.includes(result.action?.interactor.verifications[0] ?? "");   
+    const qualified = diviBalance > 0 || diviDogeBalance > 0 || outcastsBalance > 0 || isWhitelisted || fid <= 30000 ? true : false; 
+    if (qualified) {
     // if user is on whitelist, return the success frame
         return new NextResponse(`
         <!DOCTYPE html>

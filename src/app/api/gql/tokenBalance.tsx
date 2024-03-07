@@ -49,3 +49,27 @@ export const getDiviBalance = (address: string) => `
           }
     }
 `
+
+export const getOutcastsBalance = (address: string) => `
+    query {
+        TokenBalances(
+          input: {filter: 
+          {owner: 
+            {_in: "${address}"}, 
+            tokenAddress: {_in: "0x73682A7f47Cb707C52cb38192dBB9266D3220315"}, 
+            tokenType: {_eq: ERC721}},
+            blockchain: base,
+          }
+          ) {
+            TokenBalance {
+              owner {
+                addresses
+              }
+              tokenAddress
+              amount
+              blockchain
+              tokenType
+            }
+          }
+        }
+  `
